@@ -1,13 +1,8 @@
 import streamlit as st
-import numpy as np
-from lime import lime_image
-from skimage.segmentation import mark_boundaries
-import matplotlib.pyplot as plt
-from PIL import Image
-from src import ResnetModel
+from src import PetModel
 
 #Create the model
-model = ResnetModel()
+model = PetModel()
 
 #Create a header for the webpage
 st.title('Is That a Dog or a Cat?')
@@ -25,6 +20,9 @@ if image:
     result.write(response)
 
 if image:
-    st.header('I think this because I see...\nGreen gives me confidence, red gives me doubt')
-
-    st.image(model.explain_prediction(), use_column_width='always')
+    st.header('If you wait a minute or two, I can explain my prediction')
+    result2 = st.empty()
+    result2.write('Please wait while I gather my thoughts...')
+    explanation = model.explain_prediction() 
+    result2.write('This is what I noticed:\nGreen makes me think this is a dog.\nRed makes me think this is a cat')
+    st.image(explanation, use_column_width='always')

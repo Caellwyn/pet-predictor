@@ -1,0 +1,6 @@
+test/
+train/
+__pycache__*/
+*.ipynb*
+*.zip
+modelimg200200/

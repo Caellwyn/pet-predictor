@@ -1,5 +1,7 @@
 numpy
 pillow
+streamlit
 tensorflow-cpu
+tensorflow-hub
 lime
-scikit-image
+skimage

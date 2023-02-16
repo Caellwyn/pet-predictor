@@ -1,60 +1,50 @@
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import InputLayer, Flatten, Dense
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.applications import ResNet50V2
-import pickle
+from tensorflow.keras.layers import Dense, Input
 from PIL import Image
 import numpy as np
-import base64
-from io import BytesIO
-import re
 from lime import lime_image
 from skimage.segmentation import mark_boundaries
+import tensorflow_hub as hub
+import pickle
 
-class ResnetModel():
-    #
+class PetModel():
+    # A model that predict whether an image contains a cat or a dog
     def __init__(self):
         """instantiate the model object"""
-        self.model = self.create_ResNet()
+        self.model = self.create_model()
     
-    def create_ResNet(self):
+    def create_model(self):
         """Builds the model using a ResNet50V2 pretrained on imagenet as the first layers 
         and loads 2 pretrained hidden dense layers and an output layer from weights."""
-        
-        resnet = ResNet50V2(include_top=False, weights='imagenet')
-        
-        dense_1 = Dense(128, activation='relu')
-        dense_2 = Dense(128, activation='relu')
-        dense_3 = Dense(1, activation='sigmoid')
+              
+        handle = "https://tfhub.dev/google/imagenet/efficientnet_v2_imagenet1k_l/classification/2"
+        efficientnetlayer = hub.KerasLayer(handle,
+                              trainable=False,
+                                     input_shape=(200, 200, 3))
+
+        with open('top_weights.pkl', 'rb') as f:
+            layer_weights = pickle.load(f)
 
 
-        model = Sequential()
-        model.add(InputLayer(input_shape=(100, 100, 3)))
-        model.add(resnet)
-        model.add(Flatten())
-        model.add(dense_1)
-        model.add(dense_2)
-        model.add(dense_3)
-        
-        dense_1_weights = pickle.load(open('weights/dense_1_weights.pkl', 'rb'))
-        dense_2_weights = pickle.load(open('weights/dense_2_weights.pkl', 'rb'))
-        dense_3_weights = pickle.load(open('weights/dense_3_weights.pkl', 'rb'))
+        input_layer = Input(shape=(200,200,3))
+        dense1 = Dense(128, activation='selu')
+        output = Dense(1, activation='sigmoid')
 
-        dense_1.set_weights(dense_1_weights)
-        dense_2.set_weights(dense_2_weights)
-        dense_3.set_weights(dense_3_weights)
+        model = Sequential([input_layer, efficientnetlayer, dense1, output])
+        model.layers[-2].set_weights(layer_weights[0])
+        model.layers[-1].set_weights(layer_weights[1])
         
         #It is not necessary to compile a model in order to make a prediction
-
+        self.model = model
         return model
             
     def convert_image(self, image):
         """Convert an image file into the right format and size for the model"""
         
         img = Image.open(image)
-        img = img.resize((100,100))
+        img = img.resize((200,200))
         img = np.asarray(img)
-        img = img.reshape((1,100,100,3))
+        img = img.reshape((1,200,200,3))
         img = img / 255
         self.img = img
         
@@ -64,13 +54,13 @@ class ResnetModel():
         """Return a prediction, dog or cat, and confidence for a passed image file"""
         
         self.convert_image(image)
-        proba = self.model.predict(self.img)[0][0]
+        proba = self.model.predict(self.img)[0]
         
         if proba >= .6:
             certainty = int(proba * 100)
             return f"I am {certainty}% certain this is a dog"
         elif proba <= .4: 
-            certainty = int((1 - proba)*100)
+            certainty = int((1 - proba) * 100)
             return f"I am {certainty}% certain this is a cat"
         else:
             return f"I don't have a clue what this is.  Would you like to try a different image?"
@@ -80,12 +70,13 @@ class ResnetModel():
 
             explainer = lime_image.LimeImageExplainer()
             exp = explainer.explain_instance(self.img[0],
-                                        self.model.predict)
+                                            self.model.predict,
+                                            num_samples=100)
             image, mask = exp.get_image_and_mask(0,
                                              positive_only=False, 
                                              negative_only=False,
                                              hide_rest=False,
-                                             min_weight=0.1
+                                             min_weight=0
                                             )
             return mark_boundaries(image, mask)
         except AttributeError:
