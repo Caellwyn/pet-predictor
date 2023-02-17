@@ -12,29 +12,24 @@ class PetModel():
     def __init__(self):
         """Builds the model using a efficient_v2 model pretrained on imagenet as the first layers 
         and loads 1 pretrained hidden dense layer and an output layer from weights."""
+
+        handle = "https://tfhub.dev/google/imagenet/efficientnet_v2_imagenet1k_l/classification/2"
+
+        self.model = Sequential([Input(shape=(200,200,3)),
+                                    hub.KerasLayer(handle,
+                                                trainable=False,
+                                                input_shape=(200, 200, 3)),
+                                    Dense(128, activation='selu'),
+                                    Dense(1, activation='sigmoid')])
+
+        with open('top_weights.pkl', 'rb') as f:
+            layer_weights = pickle.load(f)       
+
+        self.model.layers[-2].set_weights(layer_weights[0])
+        self.model.layers[-1].set_weights(layer_weights[1])
         
-        try: 
-            self.model = load_model('pet_model')
-            print('loaded saved model')
-        except:
-            handle = "https://tfhub.dev/google/imagenet/efficientnet_v2_imagenet1k_l/classification/2"
-
-            self.model = Sequential([Input(shape=(200,200,3)),
-                                     hub.KerasLayer(handle,
-                                                    trainable=False,
-                                                    input_shape=(200, 200, 3)),
-                                     Dense(128, activation='selu'),
-                                     Dense(1, activation='sigmoid')])
-
-            with open('top_weights.pkl', 'rb') as f:
-                layer_weights = pickle.load(f)       
-
-            self.model.layers[-2].set_weights(layer_weights[0])
-            self.model.layers[-1].set_weights(layer_weights[1])
-            
-            self.model.save('pet_model')
-            del layer_weights
-            print('created new model')
+        del layer_weights
+        print('created new model')
             
     def convert_image(self, image):
         """Convert an image file into the right format and size for the model"""
