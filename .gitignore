@@ -1,5 +1,6 @@
 test/
 train/
+pet_model/
 __pycache__*/
 *.ipynb*
 *.zip
