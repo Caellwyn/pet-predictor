@@ -71,7 +71,7 @@ class PetModel():
             explainer = lime_image.LimeImageExplainer()
             exp = explainer.explain_instance(self.img[0],
                                             self.model.predict,
-                                            num_samples=50)
+                                            num_samples=25)
             image, mask = exp.get_image_and_mask(0,
                                              positive_only=False, 
                                              negative_only=False,
