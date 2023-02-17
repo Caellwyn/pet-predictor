@@ -2,7 +2,7 @@ import streamlit as st
 from src import PetModel
 
 #Create the model
-if not model:
+if not 'model' in globals():
     model = PetModel()
     print('Created Model')
 
