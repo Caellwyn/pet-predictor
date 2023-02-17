@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 from lime.lime_image import LimeImageExplainer
 from skimage.segmentation import mark_boundaries
-from tensorflow_hub.hub import KerasLayer
+from tensorflow_hub import KerasLayer
 import pickle
 
 class PetModel():
