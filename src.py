@@ -10,32 +10,24 @@ import pickle
 class PetModel():
     # A model that predict whether an image contains a cat or a dog
     def __init__(self):
-        """instantiate the model object"""
-        self.model = self.create_model()
-    
-    def create_model(self):
         """Builds the model using a efficient_v2 model pretrained on imagenet as the first layers 
         and loads 1 pretrained hidden dense layer and an output layer from weights."""
               
         handle = "https://tfhub.dev/google/imagenet/efficientnet_v2_imagenet1k_l/classification/2"
-        efficientnetlayer = hub.KerasLayer(handle,
-                              trainable=False,
-                                     input_shape=(200, 200, 3))
 
-        with open('top_weights.pkl', 'rb') as f:
-            layer_weights = pickle.load(f)
-
-
-        input_layer = Input(shape=(200,200,3))
-        dense1 = Dense(128, activation='selu')
-        output = Dense(1, activation='sigmoid')
-
-        model = Sequential([input_layer, efficientnetlayer, dense1, output])
-        model.layers[-2].set_weights(layer_weights[0])
-        model.layers[-1].set_weights(layer_weights[1])
+        self.model = Sequential([Input(shape=(200,200,3)),
+                                 hub.KerasLayer(handle,
+                                                trainable=False,
+                                                input_shape=(200, 200, 3)),
+                                 Dense(128, activation='selu'),
+                                 Dense(1, activation='sigmoid')])
         
-        #It is not necessary to compile a model in order to make a prediction
-        return model
+        with open('top_weights.pkl', 'rb') as f:
+            layer_weights = pickle.load(f)       
+        
+        self.model.layers[-2].set_weights(layer_weights[0])
+        self.model.layers[-1].set_weights(layer_weights[1])
+        del layer_weights
             
     def convert_image(self, image):
         """Convert an image file into the right format and size for the model"""
