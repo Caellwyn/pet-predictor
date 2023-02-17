@@ -4,4 +4,4 @@ streamlit
 tensorflow-cpu
 tensorflow-hub
 lime
-scikit_image
+scikit-image
