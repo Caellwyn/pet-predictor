@@ -26,3 +26,4 @@ if image:
     explanation = model.explain_prediction() 
     result2.write('This is what I noticed:\nGreen makes me think this is a dog.\nRed makes me think this is a cat')
     st.image(explanation, use_column_width='always')
+    del explanation
