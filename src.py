@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 from lime.lime_image import LimeImageExplainer
 from skimage.segmentation import mark_boundaries
-import tensorflow_hub as hub
+from tensorflow_hub.hub import KerasLayer
 import pickle
 
 class PetModel():
@@ -16,11 +16,12 @@ class PetModel():
         handle = "https://tfhub.dev/google/imagenet/efficientnet_v2_imagenet1k_l/classification/2"
 
         self.model = Sequential([Input(shape=(200,200,3)),
-                                    hub.KerasLayer(handle,
-                                                trainable=False,
-                                                input_shape=(200, 200, 3)),
-                                    Dense(128, activation='selu'),
-                                    Dense(1, activation='sigmoid')])
+                                KerasLayer(handle,
+                                           trainable=False,
+                                           input_shape=(200, 200, 3)),
+                                Dense(128, activation='selu'),
+                                Dense(1, activation='sigmoid')
+                                ])
 
         with open('top_weights.pkl', 'rb') as f:
             layer_weights = pickle.load(f)       
@@ -64,7 +65,7 @@ class PetModel():
             explainer = LimeImageExplainer()
             exp = explainer.explain_instance(self.img[0],
                                             self.model.predict,
-                                            num_samples=25)
+                                            num_samples=100)
             del explainer
             image, mask = exp.get_image_and_mask(0,
                                              positive_only=False, 
