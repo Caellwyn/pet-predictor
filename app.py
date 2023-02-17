@@ -3,15 +3,10 @@ from src import PetModel
 from time import time
 
 print('starting over')
-@st.cache(allow_output_mutation=True)
+
+@st.cache_resource(show_spinner=False)
 def load_model():
     return PetModel()
-
-def make_prediction(model, img):
-    return model.predict_pet(img)
-
-def explain_prediction(model):
-    return model.explain_prediction()
 
 
 if __name__ == "__main__":
@@ -37,7 +32,7 @@ if __name__ == "__main__":
 
         # predict image
         start = time()
-        response = make_prediction(model, image)
+        response = model.predict_pet(image)
         print(f'model predicted in {time() - start}')
         print('made a prediction')
         result.write(response)
@@ -48,11 +43,12 @@ if __name__ == "__main__":
         result2.write('Please wait while I gather my thoughts...')
 
         start = time()
-        explanation = explain_prediction(model)
+        explanation = model.explain_prediction()
         print(f'model explained predictions in {time() - start}')
         print('created an explanation image')
         result2.write('This is what I noticed:\nGreen makes me think this is a dog.\nRed makes me think this is a cat')
         st.image(explanation, use_column_width='always')
+
         del explanation
         del image
         del model

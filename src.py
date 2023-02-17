@@ -29,13 +29,12 @@ class PetModel():
         self.model.layers[-2].set_weights(layer_weights[0])
         self.model.layers[-1].set_weights(layer_weights[1])
         
-        del layer_weights
         print('created new model')
             
-    def convert_image(self, image):
+    def convert_image(self, img):
         """Convert an image file into the right format and size for the model"""
         
-        img = Image.open(image)
+        img = Image.open(img)
         img = img.resize((200,200))
         img = np.asarray(img)
         img = img.reshape((1,200,200,3))
@@ -65,18 +64,15 @@ class PetModel():
             explainer = LimeImageExplainer()
             exp = explainer.explain_instance(self.img[0],
                                             self.model.predict,
-                                            num_samples=1000)
-            del explainer
+                                            num_samples=100)
+
             image, mask = exp.get_image_and_mask(0,
-                                             positive_only=False, 
-                                             negative_only=False,
-                                             hide_rest=False,
-                                             min_weight=0
+                                                positive_only=False, 
+                                                negative_only=False,
+                                                hide_rest=False,
+                                                min_weight=0
                                             )
-            del exp
             explanation = mark_boundaries(image, mask)
-            del image
-            del mask
             return explanation
         except AttributeError:
-            print("Please make a prediction first")
+            print('Model not fit yet')
