@@ -43,7 +43,7 @@ if __name__ == "__main__":
         result.write(response)
 
         #show an image with a mask showing model activations
-        st.header('If you wait a minute or two, I can explain my prediction')
+        st.header('Explaining my prediction')
         result2 = st.empty()
         result2.write('Please wait while I gather my thoughts...')
 
