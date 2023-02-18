@@ -2,8 +2,6 @@ from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, Input
 from PIL import Image
 import numpy as np
-from lime.lime_image import LimeImageExplainer
-from skimage.segmentation import mark_boundaries
 from tensorflow_hub import KerasLayer
 import pickle
 
@@ -57,22 +55,3 @@ class PetModel():
         else:
             return f"I don't have a clue what this is.  Would you like to try a different image?"
     
-    def explain_prediction(self):
-        """Create an image an a mask to explain model prediction"""
-        
-        try:
-            explainer = LimeImageExplainer()
-            exp = explainer.explain_instance(self.img[0],
-                                            self.model.predict,
-                                            num_samples=100)
-
-            image, mask = exp.get_image_and_mask(0,
-                                                positive_only=False, 
-                                                negative_only=False,
-                                                hide_rest=False,
-                                                min_weight=0
-                                            )
-            explanation = mark_boundaries(image, mask)
-            return explanation
-        except AttributeError:
-            print('Model not fit yet')
