@@ -34,7 +34,9 @@ class PetModel():
         
         img = Image.open(img)
         img = img.resize((200,200))
-        img = np.asarray(img)
+        img = np.array(img)
+        print(img.shape)
+        img = img[:,:,:3]
         img = img.reshape((1,200,200,3))
         img = img / 255
         
@@ -48,10 +50,10 @@ class PetModel():
         
         if proba >= .6:
             certainty = int(proba * 100)
-            return f"I am {certainty}% certain this is a dog"
+            return f"I am {certainty}% certain this is a dog", 'dog'
         elif proba <= .4: 
             certainty = int((1 - proba) * 100)
-            return f"I am {certainty}% certain this is a cat"
+            return f"I am {certainty}% certain this is a cat", 'cat'
         else:
             return f"I don't have a clue what this is.  Would you like to try a different image?"
     

@@ -10,74 +10,63 @@ print('starting over')
 def load_model():
     return PetModel()
 
-def explain_prediction(model, image):
+@st.cache_data
+def explain_prediction(_model, image):
     """Create an image an a mask to explain model prediction"""
-    image = model.convert_image(image)
+    converted_image = _model.convert_image(image)
     try:
         explainer = LimeImageExplainer()
-        exp = explainer.explain_instance(image[0],
-                                        model.model.predict,
+        exp = explainer.explain_instance(converted_image[0],
+                                        _model.model.predict,
                                         num_samples=25)
 
-        image, mask = exp.get_image_and_mask(0,
+        new_image, mask = exp.get_image_and_mask(0,
                                             positive_only=False, 
                                             negative_only=False,
                                             hide_rest=False,
                                             min_weight=0
                                         )
-        explanation = mark_boundaries(image, mask)
-        del explainer
-        del exp
-        del image
-        del mask
+        explanation = mark_boundaries(new_image, mask)
         return explanation
     except AttributeError:
         print('Model not fit yet')
 
 
 
-if __name__ == "__main__":
+#Create a header for the webpage
+st.title('Is That a Dog or a Cat?')
 
-    #Create a header for the webpage
-    st.title('Is That a Dog or a Cat?')
+#create an upload widget to receive an image file.  
+image = st.file_uploader("Upload Your Pet!", type=["png","jpeg","jpg"])
 
-    #create an upload widget to receive an image file.  
-    image = st.file_uploader("Upload Your Pet!", type=["png","jpeg","jpg"])
+model = load_model()
 
+#make a prediction and return the results on a new text line
+if image:
+    print('Downloaded Image!')
+    st.image(image)
+    result = st.empty()
+    result.write('Inspecting Image...')
 
-    #make a prediction and return the results on a new text line
-    if image:
-        print('Downloaded Image!')
-        st.image(image)
-        result = st.empty()
-        result.write('Inspecting Image...')
+    # predict image
+    response, prediction = model.predict_pet(image)
+    if prediction == 'dog':
+        not_prediction = 'cat'
+    else:
+        not_prediction = 'dog'
+    print('made a prediction')
+    result.write(response)
 
-        #start loading model
-        start = time()
-        model = load_model()
-        print(f'model loaded in {time() - start}')
+    #show an image with a mask showing model activations
+    st.header('Explaining my prediction')
+    result2 = st.empty()
+    result2.write('Please wait while I gather my thoughts...')
 
-        # predict image
-        start = time()
-        response = model.predict_pet(image)
-        print(f'model predicted in {time() - start}')
-        print('made a prediction')
-        result.write(response)
+    explanation = explain_prediction(model, image)
+    result2.write(f'This is what I noticed:\nGreen makes me think this is a dog.\nRed makes me think this is a cat')
+    st.image(explanation, use_column_width='always')
 
-        #show an image with a mask showing model activations
-        st.header('Explaining my prediction')
-        result2 = st.empty()
-        result2.write('Please wait while I gather my thoughts...')
-
-        start = time()
-        explanation = explain_prediction(model, image)
-        print(f'model explained predictions in {time() - start}')
-        print('created an explanation image')
-        result2.write('This is what I noticed:\nGreen makes me think this is a dog.\nRed makes me think this is a cat')
-        st.image(explanation, use_column_width='always')
-
-        del explanation
-        del image
-        del model
+    del explanation
+    del image
 
 
