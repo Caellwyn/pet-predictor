@@ -35,7 +35,6 @@ class PetModel():
         img = Image.open(img)
         img = img.resize((200,200))
         img = np.array(img)
-        print(img.shape)
         img = img[:,:,:3]
         img = img.reshape((1,200,200,3))
         img = img / 255
@@ -45,8 +44,8 @@ class PetModel():
     def predict_pet(self, image):
         """Return a prediction, dog or cat, and confidence for a passed image file"""
         
-        self.img = self.convert_image(image)
-        proba = self.model.predict(self.img)[0]
+        img = self.convert_image(image)
+        proba = self.model.predict(img)[0]
         
         if proba >= .6:
             certainty = int(proba * 100)
@@ -55,5 +54,5 @@ class PetModel():
             certainty = int((1 - proba) * 100)
             return f"I am {certainty}% certain this is a cat", 'cat'
         else:
-            return f"I don't have a clue what this is.  Would you like to try a different image?"
+            return f"I don't have a clue what this is.  Would you like to try a different image?", None
     
