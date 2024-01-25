@@ -18,7 +18,8 @@ def explain_prediction(_model, image):
         explainer = LimeImageExplainer()
         exp = explainer.explain_instance(converted_image[0],
                                         _model.model.predict,
-                                        num_samples=25)
+                                        num_samples=25,
+                                        top_labels=1)
 
         new_image, mask = exp.get_image_and_mask(0,
                                             positive_only=False, 
