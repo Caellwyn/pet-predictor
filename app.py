@@ -63,7 +63,7 @@ if image:
     result2.write('Please wait while I gather my thoughts...')
 
     explanation = explain_prediction(model, image)
-    result2.write(f'This is what I noticed:\nGreen makes me think this is a dog.\nRed makes me think this is a cat')
+    result2.write(f'This is what I noticed:\nGreen makes me think this is a {prediction}.\nRed makes me think this is a {not_prediction}')
     st.image(explanation, use_column_width='always')
 
     del explanation
