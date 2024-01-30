@@ -10,7 +10,7 @@ print('starting over')
 def load_model():
     return PetModel()
 
-@st.cache_data
+# @st.cache_data
 def explain_prediction(_model, image):
     """Create an image an a mask to explain model prediction"""
     converted_image = _model.convert_image(image)
