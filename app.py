@@ -4,7 +4,7 @@ from time import time
 from lime.lime_image import LimeImageExplainer
 from skimage.segmentation import mark_boundaries
 
-print('starting over')
+# print('starting over')
 
 @st.cache_resource()
 def load_model():
